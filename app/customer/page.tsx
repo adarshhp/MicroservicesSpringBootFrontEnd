@@ -145,7 +145,7 @@ console.log(modelData)
               <p><strong>Model:</strong> {req.model_no}</p>
               <p>Name: {req.customer_name}</p>
               <p>Email: {req.customer_email}</p>
-              <p>Status: {req.warranty_status === 1 ? "Pending" : "Resolved"}</p>
+              <p>Status: {req.warranty_status === 1 ? "Pending" : req.warranty_status === 2 ? "Approved":"Rejected"}</p>
             </div>
           ))}
         </div>
