@@ -22,18 +22,20 @@ export default function Home() {
         if (response.data.statusCode === 200) {
           localStorage.setItem("token", response.data.jwt);
           localStorage.setItem("user_type", response.data.user_type);
-          localStorage.setItem("user_id", response.data.user_id);
 
           const type = response.data.user_type;
 
           if (type === 4) {
             router.push("/admin");
           } else if (type === 1) {
-            alert("Login successful!");
+           // alert("Login successful!");
+                      localStorage.setItem("user_id", response.data.user_id);
             router.push("/customer");
           } else if (type === 3) {
+                                  localStorage.setItem("company_id", response.data.user_id);
             router.push("/company");
           } else if (type === 2) {
+                                              localStorage.setItem("seller_id", response.data.user_id);
             router.push("/seller");
           }
         }

@@ -42,7 +42,7 @@ const Page = () => {
   const [requests, setRequests] = useState<WarrantyRequest[]>([]);
   const [showForm, setShowForm] = useState(false);
   const { register, handleSubmit, reset } = useForm<Product>();
-  const companyId = Number(localStorage.getItem("user_id"));
+  const companyId = Number(localStorage.getItem("company_id"));
 
   const fetchProducts = async () => {
     try {
@@ -88,12 +88,31 @@ const Page = () => {
       alert("Error adding product: " + error.message);
     }
   };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleStatusChange=(status:any,requestid:any)=>{
+    axios.get(`http://localhost:4089/warranty-action?purchase_id=${requestid}&status=${status}
+`).then((response)=>{
+    if(response?.status==200){
+      fetchRequests();  
+    }
+})
+  }
 
   return (
     <div className="p-6 bg-white text-black min-h-screen space-y-8">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Company Product Dashboard</h2>
-        <div className="space-x-2">
+        {activeTab === "products" && (
+            <button
+              onClick={() => setShowForm(true)}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+            >
+              + Add Product
+            </button>
+          )}
+        
+      </div>
+      <div className="space-x-2">
           <button
             onClick={() => setActiveTab("products")}
             className={`px-4 py-2 rounded ${activeTab === "products" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
@@ -106,16 +125,8 @@ const Page = () => {
           >
             Warranty Requests
           </button>
-          {activeTab === "products" && (
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-            >
-              + Add Product
-            </button>
-          )}
+          
         </div>
-      </div>
 
       {/* Product List */}
       {activeTab === "products" && (
@@ -151,6 +162,11 @@ const Page = () => {
                 <p className="text-sm">Phone: {req.phone_number}</p>
                 <p className="text-sm">Request Date: {req.request_date}</p>
                 <p className="text-sm">Status: {req.warranty_status === 1 ? "Pending" : req.warranty_status === 2 ? "In Progress" : "Resolved"}</p>
+                <select value={req.warranty_status} onChange={(e)=>handleStatusChange(e.target.value,req.warranty_request_id)}>
+<option value="1" disabled> Pending</option>
+<option value="2">Approve</option>
+<option value="3">Reject</option>
+                </select>
               </div>
             ))
           )}
@@ -160,7 +176,7 @@ const Page = () => {
       {/* Popover Form */}
       {showForm && (
         <div className="fixed inset-0 bg-black/60 bg-opacity-60 flex justify-center items-center z-50">
-          <div className="bg-gray-900 text-white p-6 rounded-lg w-full max-w-lg shadow-lg relative">
+          <div className="bg-gray-900 text-white p-6 rounded-lg w-full max-w-lg shadow-lg relative my-6">
             <button
               onClick={() => setShowForm(false)}
               className="absolute top-2 right-3 text-white hover:text-red-400 text-xl"
