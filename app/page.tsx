@@ -1,103 +1,121 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isLogin, setIsLogin] = useState(true);
+  const { register, handleSubmit, reset } = useForm();
+  const router = useRouter(); // ✅ Correct hook for Next.js navigation
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onSubmit = async (data: any) => {
+    try {
+      if (isLogin) {
+        const response = await axios.post("http://localhost:2089/login", {
+          email: data.email,
+          password: data.password,
+        });
+
+        if (response.data.statusCode === 200) {
+          localStorage.setItem("token", response.data.jwt);
+          localStorage.setItem("user_type", response.data.user_type);
+          localStorage.setItem("user_id", response.data.user_id);
+
+          const type = response.data.user_type;
+
+          if (type === 4) {
+            router.push("/admin");
+          } else if (type === 1) {
+            alert("Login successful!");
+            router.push("/customer");
+          } else if (type === 3) {
+            router.push("/company");
+          } else if (type === 2) {
+            router.push("/seller");
+          }
+        }
+      } else {
+        const response = await axios.post("http://localhost:2089/signup", {
+          userName: data.userName,
+          email: data.email,
+          password: data.password,
+        });
+
+        if (response.status === 200) {
+          alert("Signup successful! You can now log in.");
+          setIsLogin(true);
+          reset();
+        }
+      }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      alert("Error: " + (error.response?.data?.message || error.message));
+    }
+  };
+
+  return (
+    <div className="bg-white min-h-screen flex items-center justify-center p-4 sm:p-8 font-[family-name:var(--font-geist-sans)]">
+      <div className="max-w-md w-full bg-gray-600 rounded-2xl shadow-xl p-8 space-y-6">
+        <div className="flex justify-between items-center mb-6">
+          <button
+            onClick={() => {
+              setIsLogin(true);
+              reset();
+            }}
+            className={`px-4 py-2 rounded-lg ${
+              isLogin ? "bg-blue-600 text-white" : "bg-gray-300"
+            }`}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Login
+          </button>
+          <button
+            onClick={() => {
+              setIsLogin(false);
+              reset();
+            }}
+            className={`px-4 py-2 rounded-lg ${
+              !isLogin ? "bg-blue-600 text-white" : "bg-gray-300"
+            }`}
           >
-            Read our docs
-          </a>
+            Sign Up
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {!isLogin && (
+            <input
+              {...register("userName")}
+              type="text"
+              placeholder="Username"
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+            />
+          )}
+          <input
+            {...register("email")}
+            type="email"
+            placeholder="Email"
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <input
+            {...register("password")}
+            type="password"
+            placeholder="Password"
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            {isLogin ? "Login" : "Sign Up"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
