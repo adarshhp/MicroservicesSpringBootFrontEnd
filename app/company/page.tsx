@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const categories = [
   { id: 1, name: "Electronics" },
@@ -43,6 +44,7 @@ const Page = () => {
   const [showForm, setShowForm] = useState(false);
   const { register, handleSubmit, reset } = useForm<Product>();
   const companyId = Number(localStorage.getItem("company_id"));
+const router = useRouter();
 
   const fetchProducts = async () => {
     try {
@@ -76,6 +78,7 @@ const Page = () => {
       const payload = {
         ...data,
         company_id: companyId,
+        product_image: "strwing",
       };
 
       await axios.post("http://localhost:1089/postproduct", payload);
@@ -99,9 +102,11 @@ const Page = () => {
   }
 
   return (
-    <div className="p-6 bg-white text-black min-h-screen space-y-8">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Company Product Dashboard</h2>
+    <div className="p-6 bg-white text-black min-h-screen space-y-8 mb-4">
+                    <button className="bg-blue-500 fixed top-0 right-0 p-1 rounded-xl" onClick={()=>router.push("/")}>Logout</button>
+
+      <div className="flex justify-between items-center pt-5">
+            <h1 className="text-3xl font-bold">Company Dashboard</h1>
         {activeTab === "products" && (
             <button
               onClick={() => setShowForm(true)}
@@ -135,7 +140,7 @@ const Page = () => {
             <p className="col-span-full text-gray-500">No products found.</p>
           ) : (
             products.map((product, index) => (
-              <div key={index} className="border rounded-lg p-4 bg-white text-black shadow-sm">
+              <div key={index} className="border rounded-lg p-4 bg-indigo-100 text-black shadow-sm">
                 <p className="font-semibold">{product.product_name}</p>
                 <p className="text-sm text-gray-600">Model: {product.model_no}</p>
                 <p className="text-sm">₹{product.product_price}</p>
@@ -155,7 +160,7 @@ const Page = () => {
             <p className="col-span-full text-gray-500">No warranty requests found.</p>
           ) : (
             requests.map((req) => (
-              <div key={req.warranty_request_id} className="border rounded-lg p-4 bg-white text-black shadow-sm">
+              <div key={req.warranty_request_id} className="border rounded-lg p-4 bg-indigo-100 text-black shadow-sm">
                 <p className="font-semibold">{req.customer_name}</p>
                 <p className="text-sm">Model: {req.model_no}</p>
                 <p className="text-sm">Email: {req.customer_email}</p>
