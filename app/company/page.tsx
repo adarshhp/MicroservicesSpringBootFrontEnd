@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import { useRouter } from "next/navigation";
 
 const categories = [
   { id: 1, name: "Electronics" },
@@ -44,13 +44,11 @@ const Page = () => {
   const [showForm, setShowForm] = useState(false);
   const { register, handleSubmit, reset } = useForm<Product>();
   const companyId = Number(localStorage.getItem("company_id"));
-const router = useRouter();
 
   const fetchProducts = async () => {
     try {
       const res = await axios.get(`http://localhost:1089/getProducts?company_id=${companyId}`);
       setProducts(res.data || []);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       alert("Error fetching products: " + error.message);
     }
@@ -60,7 +58,6 @@ const router = useRouter();
     try {
       const res = await axios.get(`http://localhost:4089/getraised-warranty-requests?company_id=${companyId}`);
       setRequests(res.data || []);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       alert("Error fetching requests: " + error.message);
     }
@@ -86,66 +83,81 @@ const router = useRouter();
       reset();
       setShowForm(false);
       fetchProducts();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       alert("Error adding product: " + error.message);
     }
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleStatusChange=(status:any,requestid:any)=>{
-    axios.get(`http://localhost:4089/warranty-action?purchase_id=${requestid}&status=${status}
-`).then((response)=>{
-    if(response?.status==200){
-      fetchRequests();  
-    }
-})
-  }
+
+  const handleStatusChange = (status: any, requestid: any) => {
+    axios
+      .get(`http://localhost:4089/warranty-action?purchase_id=${requestid}&status=${status}`)
+      .then((response) => {
+        if (response?.status == 200) {
+          fetchRequests();
+        }
+      });
+  };
 
   return (
-    <div className="p-6 bg-white text-black min-h-screen space-y-8 mb-4">
-                    <button className="bg-blue-500 fixed top-0 right-0 p-1 rounded-xl" onClick={()=>router.push("/")}>Logout</button>
-
-      <div className="flex justify-between items-center pt-5">
-            <h1 className="text-3xl font-bold">Company Dashboard</h1>
+    <div className="p-6 bg-gray-100 min-h-screen text-black space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-4xl font-bold text-gray-800">Company Dashboard</h1>
         {activeTab === "products" && (
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-            >
-              + Add Product
-            </button>
-          )}
-        
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition"
+          >
+            + Add Product
+          </button>
+        )}
       </div>
-      <div className="space-x-2">
-          <button
-            onClick={() => setActiveTab("products")}
-            className={`px-4 py-2 rounded ${activeTab === "products" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
-          >
-            Products
-          </button>
-          <button
-            onClick={() => setActiveTab("requests")}
-            className={`px-4 py-2 rounded ${activeTab === "requests" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
-          >
-            Warranty Requests
-          </button>
-          
-        </div>
 
-      {/* Product List */}
+      <div className="space-x-4">
+        <button
+          onClick={() => setActiveTab("products")}
+          className={`px-6 py-2 rounded-lg font-medium ${
+            activeTab === "products"
+              ? "bg-blue-600 text-white"
+              : "bg-white text-gray-700 border border-gray-300"
+          }`}
+        >
+          Products
+        </button>
+        <button
+          onClick={() => setActiveTab("requests")}
+          className={`px-6 py-2 rounded-lg font-medium ${
+            activeTab === "requests"
+              ? "bg-blue-600 text-white"
+              : "bg-white text-gray-700 border border-gray-300"
+          }`}
+        >
+          Warranty Requests
+        </button>
+      </div>
+
+      {/* Products Tab */}
       {activeTab === "products" && (
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {products.length === 0 ? (
             <p className="col-span-full text-gray-500">No products found.</p>
           ) : (
             products.map((product, index) => (
-              <div key={index} className="border rounded-lg p-4 bg-indigo-100 text-black shadow-sm">
-                <p className="font-semibold">{product.product_name}</p>
+              <div
+                key={index}
+                className="bg-white shadow-md rounded-xl p-5 space-y-2 border border-gray-200"
+              >
+                <h2 className="text-lg font-semibold">{product.product_name}</h2>
                 <p className="text-sm text-gray-600">Model: {product.model_no}</p>
-                <p className="text-sm">₹{product.product_price}</p>
+                <p className="text-sm text-gray-800 font-medium">₹{product.product_price}</p>
                 <p className="text-sm">Warranty: {product.warrany_tenure} months</p>
-                <p className="text-sm">Category: {categories.find(c => c.id === product.product_category)?.name || product.product_category}</p>
+                <p className="text-sm">
+Category: {
+  product.product_category == 1 ? "Electronics" :
+  product.product_category == 2 ? "Plastic" :
+  product.product_category == 3 ? "Wood" :
+  product.product_category == 4 ? "Metal" :
+  "Unknown"
+}                </p>
                 <p className="text-xs text-gray-500">Mfg Date: {product.man_date}</p>
               </div>
             ))
@@ -153,24 +165,42 @@ const router = useRouter();
         </div>
       )}
 
-      {/* Warranty Requests */}
+      {/* Warranty Requests Tab */}
       {activeTab === "requests" && (
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {requests.length === 0 ? (
             <p className="col-span-full text-gray-500">No warranty requests found.</p>
           ) : (
             requests.map((req) => (
-              <div key={req.warranty_request_id} className="border rounded-lg p-4 bg-indigo-100 text-black shadow-sm">
-                <p className="font-semibold">{req.customer_name}</p>
-                <p className="text-sm">Model: {req.model_no}</p>
+              <div
+                key={req.warranty_request_id}
+                className="bg-white shadow-md rounded-xl p-5 space-y-2 border border-gray-200"
+              >
+                <h2 className="text-lg font-semibold">{req.customer_name}</h2>
+                <p className="text-sm text-gray-600">Model: {req.model_no}</p>
                 <p className="text-sm">Email: {req.customer_email}</p>
                 <p className="text-sm">Phone: {req.phone_number}</p>
                 <p className="text-sm">Request Date: {req.request_date}</p>
-                <p className="text-sm">Status: {req.warranty_status === 1 ? "Pending" : req.warranty_status === 2 ? "In Progress" : "Resolved"}</p>
-                <select value={req.warranty_status} onChange={(e)=>handleStatusChange(e.target.value,req.warranty_request_id)}>
-<option value="1" disabled> Pending</option>
-<option value="2">Approve</option>
-<option value="3">Reject</option>
+                <p className="text-sm font-medium">
+                  Status:{" "}
+                  {req.warranty_status === 1
+                    ? "Pending"
+                    : req.warranty_status === 2
+                    ? "Approved"
+                    : "Rejected"}
+                </p>
+                <select
+                  value={req.warranty_status}
+                  onChange={(e) =>
+                    handleStatusChange(e.target.value, req.warranty_request_id)
+                  }
+                  className="w-full border border-gray-300 px-3 py-2 rounded-lg mt-2"
+                >
+                  <option value="1" disabled>
+                    Pending
+                  </option>
+                  <option value="2">Approve</option>
+                  <option value="3">Reject</option>
                 </select>
               </div>
             ))
@@ -178,43 +208,97 @@ const router = useRouter();
         </div>
       )}
 
-      {/* Popover Form */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/60 bg-opacity-60 flex justify-center items-center z-50">
-          <div className="bg-gray-900 text-white p-6 rounded-lg w-full max-w-lg shadow-lg relative my-6">
-            <button
-              onClick={() => setShowForm(false)}
-              className="absolute top-2 right-3 text-white hover:text-red-400 text-xl"
-            >
-              ×
-            </button>
-            <h3 className="text-lg font-semibold mb-4">Add New Product</h3>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-                <label>Product Name</label>
-              <input {...register("product_name")} placeholder="Product Name" required className="w-full border px-3 py-2 rounded bg-white text-black" />
-                              <label>Model No</label>
-
-              <input {...register("model_no")} placeholder="Model No" required className="w-full border px-3 py-2 rounded bg-white text-black" />
-              <label>Price</label>
-              <input {...register("product_price")} type="number" placeholder="Price" required className="w-full border px-3 py-2 rounded bg-white text-black" />
-              <label>Warranty Tenure(Months)</label>
-              <input {...register("warrany_tenure")} type="number" placeholder="Warranty (months)" required className="w-full border px-3 py-2 rounded bg-white text-black" />
-              <label>Manufacturing date</label>
-              <input {...register("man_date")} type="date" placeholder="Manufacturing Date" required className="w-full border px-3 py-2 rounded bg-white text-black" />
-              <label>Product Category</label>
-              <select {...register("product_category")} className="w-full border px-3 py-2 rounded bg-white text-black" required>
-                <option value="">Select Category</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
-                ))}
-              </select>
-              <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">
-                Save Product
-              </button>
-            </form>
-          </div>
+      {/* Add Product Form Modal */}
+     {showForm && (
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 px-4">
+    <div className="bg-white text-black p-6 rounded-lg w-full max-w-xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <button
+        onClick={() => setShowForm(false)}
+        className="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-2xl"
+      >
+        ×
+      </button>
+      <h3 className="text-2xl font-semibold mb-5 text-center">Add New Product</h3>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div>
+          <label className="block mb-1">Product Name</label>
+          <input
+            {...register("product_name")}
+            required
+            className="w-full border px-4 py-2 rounded-lg"
+            placeholder="Product Name"
+          />
         </div>
-      )}
+
+        <div>
+          <label className="block mb-1">Model No</label>
+          <input
+            {...register("model_no")}
+            required
+            className="w-full border px-4 py-2 rounded-lg"
+            placeholder="Model Number"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1">Price</label>
+          <input
+            {...register("product_price")}
+            type="number"
+            required
+            className="w-full border px-4 py-2 rounded-lg"
+            placeholder="Price"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1">Warranty Tenure (Months)</label>
+          <input
+            {...register("warrany_tenure")}
+            type="number"
+            required
+            className="w-full border px-4 py-2 rounded-lg"
+            placeholder="Warranty Tenure"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1">Manufacturing Date</label>
+          <input
+            {...register("man_date")}
+            type="date"
+            required
+            className="w-full border px-4 py-2 rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1">Product Category</label>
+          <select
+            {...register("product_category")}
+            required
+            className="w-full border px-4 py-2 rounded-lg"
+          >
+            <option value="">Select Category</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg w-full hover:bg-blue-700 transition"
+        >
+          Save Product
+        </button>
+      </form>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
