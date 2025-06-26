@@ -4,13 +4,16 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import { useRouter } from "next/navigation";
 
 const CustomerWarrantyPage = () => {
-  const [activeTab, setActiveTab] = useState<"registered" | "requests">("registered");
+  const [activeTab, setActiveTab] = useState<"registered" | "requests">(
+    "registered"
+  );
   const [registered, setRegistered] = useState<any[]>([]);
   const [requests, setRequests] = useState<any[]>([]);
-  const [productDetailsMap, setProductDetailsMap] = useState<Record<string, any>>({});
+  const [productDetailsMap, setProductDetailsMap] = useState<
+    Record<string, any>
+  >({});
   const [showRegisterForm, setShowRegisterForm] = useState(false);
   const [showRequestForm, setShowRequestForm] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -22,17 +25,21 @@ const CustomerWarrantyPage = () => {
 
   const registerForm = useForm();
   const requestForm = useForm();
-const router = useRouter();
 
   const fetchRegistered = async () => {
-    const res = await axios.get(`http://localhost:4089/warranty-requests-customer?customerId=${customerId}`);
+    const res = await axios.get(
+      `http://localhost:4089/warranty-requests-customer?customerId=${customerId}`
+    );
     const data = res.data || [];
     setRegistered(data);
 
     const modelNos = [...new Set(data.map((item: any) => item.model_no))];
     if (modelNos.length > 0) {
       try {
-        const prodRes = await axios.post("http://localhost:1089/products/by-models", modelNos);
+        const prodRes = await axios.post(
+          "http://localhost:1089/products/by-models",
+          modelNos
+        );
         const productMap: Record<string, any> = {};
         prodRes.data.forEach((prod: any) => {
           productMap[prod.model_no] = prod;
@@ -45,14 +52,19 @@ const router = useRouter();
   };
 
   const fetchRequests = async () => {
-    const res = await axios.get(`http://localhost:4089/raised-warranty-requests-customer?userId=${customerId}`);
+    const res = await axios.get(
+      `http://localhost:4089/raised-warranty-requests-customer?userId=${customerId}`
+    );
     const data = res.data || [];
     setRequests(data);
 
     const modelNos = [...new Set(data.map((req: any) => req.model_no))];
     if (modelNos.length > 0) {
       try {
-        const prodRes = await axios.post("http://localhost:1089/products/by-models", modelNos);
+        const prodRes = await axios.post(
+          "http://localhost:1089/products/by-models",
+          modelNos
+        );
         const productMap: Record<string, any> = {};
         prodRes.data.forEach((prod: any) => {
           productMap[prod.model_no] = prod;
@@ -73,7 +85,9 @@ const router = useRouter();
 
   const fetchModelDetails = async (modelNo: string) => {
     try {
-      const res = await axios.get(`http://localhost:1089/getProductDetailsByModelNo?Model_no=${modelNo}`);
+      const res = await axios.get(
+        `http://localhost:1089/getProductDetailsByModelNo?Model_no=${modelNo}`
+      );
       if (res.data && res.data.model_no) {
         setModelData(res.data);
         requestForm.setValue("company_id", res.data.company_id);
@@ -98,7 +112,9 @@ const router = useRouter();
 
   const handleDelete = async (purchaseId: number) => {
     try {
-      const res = await axios.post(`http://localhost:4089/delete-registered-warranty?purchase_Id=${purchaseId}`);
+      const res = await axios.post(
+        `http://localhost:4089/delete-registered-warranty?purchase_Id=${purchaseId}`
+      );
       if (res.data?.message === "Cant Delete") {
         alert("Cannot delete this warranty");
       } else {
@@ -113,7 +129,10 @@ const router = useRouter();
     const payload = { ...data, customerId };
     if (editItem) {
       try {
-        await axios.post(`http://localhost:4089/editregistered-warranty?purchase_Id=${editItem.purchase_Id}`, payload);
+        await axios.post(
+          `http://localhost:4089/editregistered-warranty?purchase_Id=${editItem.purchase_Id}`,
+          payload
+        );
         setShowRegisterForm(false);
         setEditItem(null);
         registerForm.reset();
@@ -123,47 +142,64 @@ const router = useRouter();
       }
     } else {
       try {
- await axios
+        await axios
           .get(
             `http://localhost:1089/checkeligibility?Model_no=${data.model_no}&checkvalue=4`
           )
           .then((response) => {
-if(response.data === true) {
-         axios.post("http://localhost:4089/register-warranty", payload).then((response)=>{
-          if (response.status === 200) {
-                     axios.post(`http://localhost:1089/changeholderstatus?Model_no=${data.model_no}&status=4`)
-            return;
-          }
-        })
-        setShowRegisterForm(false);
-        registerForm.reset();
-        fetchRegistered();
-      }else{
-alert("You are not eligible to register this product. Please contact support.");
-      }
+            if (response.data === true) {
+              axios
+                .post("http://localhost:4089/register-warranty", payload)
+                .then((response) => {
+                  if (response.status === 200) {
 
-      })
+                    axios.post(
+                      `http://localhost:1089/changeholderstatus?Model_no=${data.model_no}&status=4`
+                    );
+                    setShowRegisterForm(false);
+                    registerForm.reset();
+                    fetchRegistered();
+                   return;
 
-
+                  }
+                });
+              setShowRegisterForm(false);
+              registerForm.reset();
+              fetchRegistered();
+            } else {
+              alert(
+                "You are not eligible to register this product. Please contact support."
+              );
+            }
+          });
       } catch (err: any) {
         alert(err.response?.data?.message || err.message);
       }
     }
   };
 
-const handleRequestSubmit = async (data: any) => {
+ const handleRequestSubmit = async (data: any) => {
   if (!modelValid) {
     alert("Please validate model number first");
     return;
   }
 
-  const payload = {
-    ...data,
-    customer_id: customerId,
-    request_date: new Date().toISOString().split("T")[0]
-  };
-
   try {
+    const response = await axios.get(
+      `http://localhost:3089/warranty-reg-valid?ModelNo=${data.model_no}&PhoneNo=${data.phone_number}`
+    );
+
+    if (response.data === false) {
+      alert("Entered Phono No not linked to this product. Contact seller for more details.");
+      return;
+    }
+
+    const payload = {
+      ...data,
+      customer_id: customerId,
+      request_date: new Date().toISOString().split("T")[0],
+    };
+
     const eligibilityResponse = await axios.get(
       `http://localhost:1089/checkeligibility?Model_no=${data.model_no}&checkvalue=5`
     );
@@ -187,161 +223,282 @@ const handleRequestSubmit = async (data: any) => {
         fetchRequests();
       }
     } else {
-      alert("You are not eligible to raise a warranty request for this product. Please contact support.");
+      alert("You are not eligible to raise a warranty request for this product. Please register the product first.");
     }
   } catch (err: any) {
     alert(err.response?.data?.message || err.message);
   }
 };
-const handleRaiseReqeust = (purchaseId: number, modelNo: string) => {
-setShowRequestForm(true);
-requestForm.setValue("model_no", modelNo);  
 
-}
+  const handleRaiseReqeust = (purchaseId: number, modelNo: string) => {
+    setShowRequestForm(true);
+    requestForm.setValue("model_no", modelNo);
+  };
 
   return (
-    <div className="p-6 min-w-screen bg-gray-50 min-h-screen text-black">
-                    <button className="bg-blue-500 fixed top-0 right-0 p-1 rounded-xl" onClick={()=>router.push("/")}>Logout</button>
+  <div className="p-6 min-w-screen bg-gradient-to-br from-gray-50 to-blue-100 min-h-screen text-gray-800">
+    <h1 className="text-4xl font-bold mb-6 text-center text-indigo-700">Customer Dashboard</h1>
 
-      <h1 className="text-3xl font-bold pb-">Customer Dashboard</h1>
-      <div className="flex justify-between items-center mb-6">
-        <div className="space-x-4">
-          <button
-            className={`px-4 py-2 rounded ${activeTab === "registered" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
-            onClick={() => setActiveTab("registered")}
-          >
-            Registered Products
-          </button>
-          <button
-            className={`px-4 py-2 rounded ${activeTab === "requests" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
-            onClick={() => setActiveTab("requests")}
-          >
-            Warranty Requests
-          </button>
-        </div>
-        {activeTab === "registered" ? (
-          <button
-            onClick={() => {
-              registerForm.reset();
-              setEditItem(null);
-              setShowRegisterForm(true);
-            }}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          >
-            + Register Product
-          </button>
-        ) : (
-          <button
-            onClick={() => {
-              requestForm.reset();
-              setModelValid(false);
-              setShowRequestForm(true);
-            }}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          >
-            + Raise Request
-          </button>
-        )}
+    {/* Tabs */}
+    <div className="flex justify-between items-center mb-6">
+      <div className="space-x-4">
+        <button
+          className={`px-5 py-2 rounded-full font-medium transition ${
+            activeTab === "registered"
+              ? "bg-indigo-600 text-white shadow"
+              : "bg-white border border-indigo-300 text-indigo-600 hover:bg-indigo-100"
+          }`}
+          onClick={() => setActiveTab("registered")}
+        >
+          Registered Products
+        </button>
+        <button
+          className={`px-5 py-2 rounded-full font-medium transition ${
+            activeTab === "requests"
+              ? "bg-indigo-600 text-white shadow"
+              : "bg-white border border-indigo-300 text-indigo-600 hover:bg-indigo-100"
+          }`}
+          onClick={() => setActiveTab("requests")}
+        >
+          Warranty Requests
+        </button>
       </div>
 
-      {activeTab === "registered" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {registered.map((item) => {
-            const product = productDetailsMap[item.model_no] || {};
-            return (
-              <div key={item.purchase_Id} className="bg-indigo-100 border rounded p-4 shadow relative">
-                <p><strong>Model:</strong> {item.model_no}</p>
-                <p>Purchase Date: {item.purchase_date}</p>
-                {product.product_name && (
-                  <>
-                    <hr className="my-2" />
-                    <p><strong>Product Name:</strong> {product.product_name}</p>
-                    <p><strong>Price:</strong> ₹{product.product_price}</p>
-                    <p><strong>Warranty:</strong> {product.warrany_tenure} years</p>
-                    <p><strong>Manufactured:</strong> {product.man_date}</p>
-                  </>
-                )}
-                <div className="absolute top-2 right-2 space-x-2">
-                  <button onClick={() => handleEdit(item)} className="text-blue-500">Edit</button>
-                  <button onClick={() => handleDelete(item.purchase_Id)} className="text-red-500">Delete</button>
-                  <button onClick={()=>handleRaiseReqeust(item.purchase_Id,item.model_no)} className="text-green-500">Request</button>
-
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {activeTab === "requests" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {requests.map((req) => {
-            const product = productDetailsMap[req.model_no] || {};
-            return (
-              <div key={req.warranty_request_id} className="bg-indigo-100 border rounded p-4 shadow">
-                <p><strong>Model:</strong> {req.model_no}</p>
-                <p>Name: {req.customer_name}</p>
-                <p>Email: {req.customer_email}</p>
-                <p>Status: {req.warranty_status === 1 ? "Pending" : req.warranty_status === 2 ? "Approved" : "Rejected"}</p>
-                {product.product_name && (
-                  <>
-                    <hr className="my-2" />
-                    <p><strong>Product Name:</strong> {product.product_name}</p>
-                    <p><strong>Price:</strong> ₹{product.product_price}</p>
-                    <p><strong>Warranty:</strong> {product.warrany_tenure} years</p>
-                    <p><strong>Manufactured:</strong> {product.man_date}</p>
-                  </>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {showRegisterForm && (
-        <div className="fixed inset-0 bg-black/60 bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg w-full max-w-lg">
-            <div className="w-full flex justify-between">
-              <h3 className="text-lg font-semibold mb-4">{editItem ? "Edit Registered Product" : "Register Product"}</h3>
-              <button onClick={() => { setShowRegisterForm(false); setEditItem(null); }}>close</button>
-            </div>
-            <form onSubmit={registerForm.handleSubmit(handleRegisterSubmit)} className="space-y-4">
-              <input {...registerForm.register("model_no")} placeholder="Model No" required className="p-2 border w-full rounded" />
-              <input {...registerForm.register("purchase_date")} type="date" required className="p-2 border w-full rounded" />
-              <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded w-full">Submit</button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {showRequestForm && (
-        <div className="fixed inset-0 bg-black/60 bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg w-full max-w-lg">
-            <div className="w-full flex justify-between">
-              <h3 className="text-lg font-semibold mb-4">Raise Warranty Request</h3>
-              <button onClick={() => setShowRequestForm(false)} className="bg-red p-0.5">close</button>
-            </div>
-            <form onSubmit={requestForm.handleSubmit(handleRequestSubmit)} className="space-y-3">
-              <div className="flex gap-2">
-                <input {...requestForm.register("model_no")} placeholder="Model No" required className="p-2 border w-full rounded" />
-                <button type="button" onClick={() => fetchModelDetails(requestForm.getValues("model_no"))} className="bg-blue-600 text-white px-3 rounded">Fetch</button>
-              </div>
-              <input {...requestForm.register("customer_name")} placeholder="Your Name" required className="p-2 border w-full rounded" />
-              <input {...requestForm.register("customer_email")} placeholder="Your Email" required className="p-2 border w-full rounded" />
-              <input {...requestForm.register("phone_number")} type="number" placeholder="Phone" required className="p-2 border w-full rounded" />
-              <button
-                type="submit"
-                disabled={!modelValid}
-                className={`w-full py-2 rounded ${modelValid ? "bg-green-600 text-white" : "bg-gray-400 text-white cursor-not-allowed"}`}
-              >
-                Submit Request
-              </button>
-            </form>
-          </div>
-        </div>
+      {/* Action Button */}
+      {activeTab === "registered" ? (
+        <button
+          onClick={() => {
+            registerForm.reset();
+            setEditItem(null);
+            setShowRegisterForm(true);
+          }}
+          className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full shadow"
+        >
+          + Register Product
+        </button>
+      ) : (
+        <button
+          onClick={() => {
+            requestForm.reset();
+            setModelValid(false);
+            setShowRequestForm(true);
+          }}
+          className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full shadow"
+        >
+          + Raise Request
+        </button>
       )}
     </div>
-  );
+
+    {/* Registered Products */}
+    {activeTab === "registered" && (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {registered.map((item) => {
+          const product = productDetailsMap[item.model_no] || {};
+          return (
+            <div
+              key={item.purchase_Id}
+              className="bg-white border border-indigo-100 rounded-xl p-5 shadow-lg relative"
+            >
+              <p className="text-lg font-medium">Model: {item.model_no}</p>
+              <p>Purchase Date: {item.purchase_date}</p>
+              {product.product_name && (
+                <>
+                  <hr className="my-3" />
+                  <p>Product Name: {product.product_name}</p>
+                  <p>Price: ₹{product.product_price}</p>
+                  <p>Warranty: {product.warrany_tenure} years</p>
+                  <p>Manufactured: {product.man_date}</p>
+                </>
+              )}
+              <div className="absolute top-2 right-2 space-x-3 text-sm font-medium">
+                <button
+                  onClick={() => handleEdit(item)}
+                  className="text-blue-600 hover:underline"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(item.purchase_Id)}
+                  className="text-red-600 hover:underline"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() =>
+                    handleRaiseReqeust(item.purchase_Id, item.model_no)
+                  }
+                  className="text-green-600 hover:underline"
+                >
+                  Request
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    )}
+
+    {/* Warranty Requests */}
+    {activeTab === "requests" && (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {requests.map((req) => {
+          const product = productDetailsMap[req.model_no] || {};
+          return (
+            <div
+              key={req.warranty_request_id}
+              className="bg-white border border-indigo-100 rounded-xl p-5 shadow-lg"
+            >
+              <p className="text-lg font-medium">Model: {req.model_no}</p>
+              <p>Name: {req.customer_name}</p>
+              <p>Email: {req.customer_email}</p>
+              <p>
+                Status:{" "}
+                <span className={
+                  req.warranty_status === 1
+                    ? "text-yellow-600"
+                    : req.warranty_status === 2
+                    ? "text-green-600"
+                    : "text-red-600"
+                }>
+                  {req.warranty_status === 1
+                    ? "Pending"
+                    : req.warranty_status === 2
+                    ? "Approved"
+                    : "Rejected"}
+                </span>
+              </p>
+              {product.product_name && (
+                <>
+                  <hr className="my-3" />
+                  <p>Product Name: {product.product_name}</p>
+                  <p>Price: ₹{product.product_price}</p>
+                  <p>Warranty: {product.warrany_tenure} years</p>
+                  <p>Manufactured: {product.man_date}</p>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    )}
+
+    {/* Register Form Modal */}
+    {showRegisterForm && (
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg relative">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold">
+              {editItem ? "Edit Registered Product" : "Register Product"}
+            </h3>
+            <button
+              onClick={() => {
+                setShowRegisterForm(false);
+                setEditItem(null);
+              }}
+              className="text-2xl text-gray-400 hover:text-red-500"
+            >
+              ×
+            </button>
+          </div>
+          <form
+            onSubmit={registerForm.handleSubmit(handleRegisterSubmit)}
+            className="space-y-4"
+          >
+            <input
+              {...registerForm.register("model_no")}
+              placeholder="Model No"
+              required
+              className="p-2 border rounded w-full"
+            />
+            <input
+              {...registerForm.register("purchase_date")}
+              type="date"
+              required
+              className="p-2 border rounded w-full"
+            />
+            <button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full"
+            >
+              Submit
+            </button>
+          </form>
+        </div>
+      </div>
+    )}
+
+    {/* Warranty Request Form Modal */}
+    {showRequestForm && (
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg relative">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold">Raise Warranty Request</h3>
+            <button
+              onClick={() => setShowRequestForm(false)}
+              className="text-2xl text-gray-400 hover:text-red-500"
+            >
+              ×
+            </button>
+          </div>
+          <form
+            onSubmit={requestForm.handleSubmit(handleRequestSubmit)}
+            className="space-y-4"
+          >
+            <div className="flex gap-2">
+              <input
+                {...requestForm.register("model_no")}
+                placeholder="Model No"
+                required
+                className="p-2 border rounded w-full"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  fetchModelDetails(requestForm.getValues("model_no"))
+                }
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 rounded"
+              >
+                Fetch
+              </button>
+            </div>
+            <input
+              {...requestForm.register("customer_name")}
+              placeholder="Your Name"
+              required
+              className="p-2 border rounded w-full"
+            />
+            <input
+              {...requestForm.register("customer_email")}
+              placeholder="Your Email"
+              required
+              className="p-2 border rounded w-full"
+            />
+            <input
+              {...requestForm.register("phone_number")}
+              type="number"
+              placeholder="Phone"
+              required
+              className="p-2 border rounded w-full"
+            />
+            <button
+              type="submit"
+              disabled={!modelValid}
+              className={`w-full py-2 rounded transition ${
+                modelValid
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : "bg-gray-400 text-white cursor-not-allowed"
+              }`}
+            >
+              Submit Request
+            </button>
+          </form>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
 };
 
 export default CustomerWarrantyPage;
