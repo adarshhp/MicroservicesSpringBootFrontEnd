@@ -198,6 +198,8 @@ const CustomerWarrantyPage = () => {
       ...data,
       customer_id: customerId,
       request_date: new Date().toISOString().split("T")[0],
+      reason: data.reason || "No reason provided",
+      image:"fdsfedsxc"
     };
 
     const eligibilityResponse = await axios.get(
@@ -236,7 +238,7 @@ const CustomerWarrantyPage = () => {
   };
 
   return (
-  <div className="p-6 min-w-screen bg-gradient-to-br from-gray-50 to-blue-100 min-h-screen text-gray-800">
+  <div className="p-6 max-w-screen bg-gradient-to-br from-gray-50 to-blue-100 min-h-screen text-gray-800">
     <h1 className="text-4xl font-bold mb-6 text-center text-indigo-700">Customer Dashboard</h1>
 
     {/* Tabs */}
@@ -478,6 +480,12 @@ const CustomerWarrantyPage = () => {
               {...requestForm.register("phone_number")}
               type="number"
               placeholder="Phone"
+              required
+              className="p-2 border rounded w-full"
+            />
+            <input
+              {...requestForm.register("reason")}
+              placeholder="Reason for Request"
               required
               className="p-2 border rounded w-full"
             />
