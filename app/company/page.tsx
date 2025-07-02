@@ -59,7 +59,7 @@ const Page = () => {
   const fetchRequests = async () => {
     try {
       const res = await axios.get(`http://localhost:4089/getraised-warranty-requests?company_id=${companyId}&status=${astatus}&modelNo=${amodelNo}`);
-      setRequests(res.data || []);
+      setRequests(res.data.content || []);
     } catch (error: any) {
       alert("Error fetching requests: " + error.message);
     }

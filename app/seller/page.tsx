@@ -28,14 +28,13 @@ const Page = () => {
 
   const inventoryForm = useForm();
   const purchaseForm = useForm();
-  console.log(warrantys, "warrantys");
   const fetchInventory = async () => {
     const res = await axios.get(
       `http://localhost:3089/allinventory?Seller_Id=${sellerId}&categoryId=${categoryIds}&modelNo=${modelNoss}&warranty=${
         warrantys == 0 ? "" : warrantys
       }`
     );
-    const data = res.data || [];
+    const data = res.data.content || [];
     setInventory(data);
     enrichWithProductDetails(data.map((i: any) => i.model_no));
   };
@@ -44,7 +43,7 @@ const Page = () => {
     const res = await axios.get(
       `http://localhost:3089/GetPurchases?Seller_Id=${sellerId}&modelNo=${modelnopurchase}`
     );
-    const data = res.data || [];
+    const data = res.data.content || [];
     setPurchases(data);
     enrichWithProductDetails(data.map((p: any) => p.modelNo));
   };
@@ -152,7 +151,6 @@ const Page = () => {
             `http://localhost:1089/checkeligibility?Model_no=${data.model_no}&checkvalue=2`
           )
           .then((response) => {
-            console.log(response.data, "mittuuu");
             if (response.data == true) {
               axios
                 .post("http://localhost:3089/inventory", payload)
@@ -263,7 +261,6 @@ const Page = () => {
     fetchPurchases();
   };
 
-  console.log(inventory, "inventory");
   const showEditOption = (item: any) => {
     setShowPurchaseForm(true);
     purchaseForm.setValue("modelNo", item.model_no);
