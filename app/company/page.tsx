@@ -49,7 +49,7 @@ const Page = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get(`http://localhost:1089/getProducts?company_id=${companyId}`);
+      const res = await axios.get(`http://localhost:1089/getProducts?company_id=${companyId}` );
       setProducts(res.data.content || []);
     } catch (error: any) {
       alert("Error fetching products: " + error.message);
