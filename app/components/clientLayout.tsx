@@ -1,9 +1,9 @@
-// app/components/ClientLayout.tsx
 "use client";
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import Navbar from "../navbar/Navbar"; // Adjust path as needed
+import Navbar from "../navbar/Navbar";
+import Sidebar from "./sidebar/sidebar";
 
 type Props = {
   children: React.ReactNode;
@@ -11,12 +11,22 @@ type Props = {
 
 const ClientLayout = ({ children }: Props) => {
   const pathname = usePathname();
-  const shouldShowNavbar = pathname !== "/"; // Hide navbar on root route
+  const shouldShowLayout = pathname !== "/"; // Hide layout on login
+
+  if (!shouldShowLayout) return <>{children}</>;
 
   return (
     <>
-      {shouldShowNavbar && <Navbar />}
-      {children}
+      <div className="flex">
+        <Sidebar />
+        <div className="w-full">
+        <main className="flex-1 bg-gray-100 min-h-screen">
+                    <Navbar/>
+
+          {children}
+          </main>
+        </div>
+      </div>
     </>
   );
 };

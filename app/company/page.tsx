@@ -43,12 +43,14 @@ const Page = () => {
   const [requests, setRequests] = useState<WarrantyRequest[]>([]);
   const [showForm, setShowForm] = useState(false);
   const { register, handleSubmit, reset } = useForm<Product>();
+  const[astatus, setAstatus] = useState("");
+  const[amodelNo, setAmodelNo] = useState("");  
   const companyId = Number(localStorage.getItem("company_id"));
 
   const fetchProducts = async () => {
     try {
       const res = await axios.get(`http://localhost:1089/getProducts?company_id=${companyId}`);
-      setProducts(res.data || []);
+      setProducts(res.data.content || []);
     } catch (error: any) {
       alert("Error fetching products: " + error.message);
     }
@@ -56,8 +58,8 @@ const Page = () => {
 
   const fetchRequests = async () => {
     try {
-      const res = await axios.get(`http://localhost:4089/getraised-warranty-requests?company_id=${companyId}`);
-      setRequests(res.data || []);
+      const res = await axios.get(`http://localhost:4089/getraised-warranty-requests?company_id=${companyId}&status=${astatus}&modelNo=${amodelNo}`);
+      setRequests(res.data.content || []);
     } catch (error: any) {
       alert("Error fetching requests: " + error.message);
     }
@@ -73,9 +75,15 @@ const Page = () => {
   const onSubmit = async (data: Product) => {
     try {
       const payload = {
-        ...data,
-        company_id: companyId,
-        product_image: "strwing",
+   product_category: data.product_category,
+   man_date: "2025-07-01",
+  product_name: data.product_name,
+  product_image: "strdsing",
+  product_price: Number(data.product_price),
+  warrany_tenure: Number(data.warrany_tenure),
+  model_no: data.model_no,
+  company_id: companyId
+
       };
 
       await axios.post("http://localhost:1089/postproduct", payload);
@@ -99,207 +107,243 @@ const Page = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen text-black space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-4xl font-bold text-gray-800">Company Dashboard</h1>
-        {activeTab === "products" && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition"
-          >
-            + Add Product
-          </button>
-        )}
-      </div>
+  <div className="p-6 bg-white h-full text-black space-y-8">
+  <div className="flex justify-center items-center">
+    <h1 className="text-4xl font-bold text-gray-900">Company Dashboard</h1>
+   
+  </div>
+<div className="flex justify-between">
+  <div className="space-x-4">
+    <button
+      onClick={() => setActiveTab("products")}
+      className={`px-6 py-2 rounded-lg font-medium ${
+        activeTab === "products"
+          ? "bg-gray-900 text-white"
+          : "bg-white text-gray-700 border border-gray-300"
+      }`}
+    >
+      Products
+    </button>
+    <button
+      onClick={() => setActiveTab("requests")}
+      className={`px-6 py-2 rounded-lg font-medium ${
+        activeTab === "requests"
+          ? "bg-gray-900 text-white"
+          : "bg-white text-gray-700 border border-gray-300"
+      }`}
+    >
+      Warranty Requests
+    </button>
+  </div>
+  
+{activeTab === "requests" && (
+  <div className="flex flex-wrap items-center gap-3 p-3 rounded-md shadow-sm text-sm">
+    
+    <input
+      type="text"
+      onChange={(e) => setAmodelNo(e.target.value)}
+      placeholder="Model No"
+      className=" text-gray-100 placeholder-gray-900 border border-gray-700 rounded px-3 py-1.5 w-48 focus:outline-none focus:ring-1 focus:ring-gray-500"
+    />
 
-      <div className="space-x-4">
-        <button
-          onClick={() => setActiveTab("products")}
-          className={`px-6 py-2 rounded-lg font-medium ${
-            activeTab === "products"
-              ? "bg-blue-600 text-white"
-              : "bg-white text-gray-700 border border-gray-300"
-          }`}
-        >
-          Products
-        </button>
-        <button
-          onClick={() => setActiveTab("requests")}
-          className={`px-6 py-2 rounded-lg font-medium ${
-            activeTab === "requests"
-              ? "bg-blue-600 text-white"
-              : "bg-white text-gray-700 border border-gray-300"
-          }`}
-        >
-          Warranty Requests
-        </button>
-      </div>
+    <select
+      value={astatus}
+      onChange={(e) => setAstatus(e.target.value)}
+      className=" text-gray-900 border placeholder-gray-900 border-gray-700 rounded px-3 py-1.5 w-40 focus:outline-none focus:ring-1 focus:ring-gray-500"
+    >
+      <option value="">All Statuses</option>
+      <option value="1">Pending</option>
+      <option value="2">Approved</option>
+      <option value="3">Rejected</option>
+    </select>
 
-      {/* Products Tab */}
-      {activeTab === "products" && (
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {products.length === 0 ? (
-            <p className="col-span-full text-gray-500">No products found.</p>
-          ) : (
-            products.map((product, index) => (
-              <div
-                key={index}
-                className="bg-white shadow-md rounded-xl p-5 space-y-2 border border-gray-200"
-              >
-                <h2 className="text-lg font-semibold">{product.product_name}</h2>
-                <p className="text-sm text-gray-600">Model: {product.model_no}</p>
-                <p className="text-sm text-gray-800 font-medium">₹{product.product_price}</p>
-                <p className="text-sm">Warranty: {product.warrany_tenure} months</p>
-                <p className="text-sm">
-Category: {
-  product.product_category == 1 ? "Electronics" :
-  product.product_category == 2 ? "Plastic" :
-  product.product_category == 3 ? "Wood" :
-  product.product_category == 4 ? "Metal" :
-  "Unknown"
-}                </p>
-                <p className="text-xs text-gray-500">Mfg Date: {product.man_date}</p>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* Warranty Requests Tab */}
-      {activeTab === "requests" && (
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {requests.length === 0 ? (
-            <p className="col-span-full text-gray-500">No warranty requests found.</p>
-          ) : (
-            requests.map((req) => (
-              <div
-                key={req.warranty_request_id}
-                className="bg-white shadow-md rounded-xl p-5 space-y-2 border border-gray-200"
-              >
-                <h2 className="text-lg font-semibold">{req.customer_name}</h2>
-                <p className="text-sm text-gray-600">Model: {req.model_no}</p>
-                <p className="text-sm">Email: {req.customer_email}</p>
-                <p className="text-sm">Phone: {req.phone_number}</p>
-                <p className="text-sm">Request Date: {req.request_date}</p>
-                <p className="text-sm font-medium">
-                  Status:{" "}
-                  {req.warranty_status === 1
-                    ? "Pending"
-                    : req.warranty_status === 2
-                    ? "Approved"
-                    : "Rejected"}
-                </p>
-                <select
-                  value={req.warranty_status}
-                  onChange={(e) =>
-                    handleStatusChange(e.target.value, req.warranty_request_id)
-                  }
-                  className="w-full border border-gray-300 px-3 py-2 rounded-lg mt-2"
-                >
-                  <option value="1" disabled>
-                    Pending
-                  </option>
-                  <option value="2">Approve</option>
-                  <option value="3">Reject</option>
-                </select>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* Add Product Form Modal */}
-     {showForm && (
-  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 px-4">
-    <div className="bg-white text-black p-6 rounded-lg w-full max-w-xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
-      <button
-        onClick={() => setShowForm(false)}
-        className="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-2xl"
-      >
-        ×
-      </button>
-      <h3 className="text-2xl font-semibold mb-5 text-center">Add New Product</h3>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label className="block mb-1">Product Name</label>
-          <input
-            {...register("product_name")}
-            required
-            className="w-full border px-4 py-2 rounded-lg"
-            placeholder="Product Name"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1">Model No</label>
-          <input
-            {...register("model_no")}
-            required
-            className="w-full border px-4 py-2 rounded-lg"
-            placeholder="Model Number"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1">Price</label>
-          <input
-            {...register("product_price")}
-            type="number"
-            required
-            className="w-full border px-4 py-2 rounded-lg"
-            placeholder="Price"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1">Warranty Tenure (Months)</label>
-          <input
-            {...register("warrany_tenure")}
-            type="number"
-            required
-            className="w-full border px-4 py-2 rounded-lg"
-            placeholder="Warranty Tenure"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1">Manufacturing Date</label>
-          <input
-            {...register("man_date")}
-            type="date"
-            required
-            className="w-full border px-4 py-2 rounded-lg"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1">Product Category</label>
-          <select
-            {...register("product_category")}
-            required
-            className="w-full border px-4 py-2 rounded-lg"
-          >
-            <option value="">Select Category</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg w-full hover:bg-blue-700 transition"
-        >
-          Save Product
-        </button>
-      </form>
-    </div>
+    <button
+      onClick={fetchRequests}
+      className="bg-gray-900 text-gray-100 px-4 py-1.5 rounded hover:bg-gray-800 transition"
+    >
+      Search
+    </button>
+    
   </div>
 )}
 
+
+ {activeTab === "products" && (
+      <button
+        onClick={() => setShowForm(true)}
+        className="bg-gray-900 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium transition"
+      >
+        + Add Product
+      </button>
+    )}
+
+</div>
+  {/* Products Tab */}
+  {activeTab === "products" && (
+    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      {products.length === 0 ? (
+        <p className="col-span-full text-gray-500">No products found.</p>
+      ) : (
+        products.map((product, index) => (
+          <div
+            key={index}
+            className="bg-white shadow-md rounded-xl p-5 space-y-2 border border-gray-200"
+          >
+            <h2 className="text-lg font-semibold text-gray-900">{product.product_name}</h2>
+            <p className="text-sm text-gray-600">Model: {product.model_no}</p>
+            <p className="text-sm text-gray-800 font-medium">₹{product.product_price}</p>
+            <p className="text-sm">Warranty: {product.warrany_tenure} months</p>
+            <p className="text-sm">
+              Category: {
+                product.product_category == 1 ? "Electronics" :
+                product.product_category == 2 ? "Plastic" :
+                product.product_category == 3 ? "Wood" :
+                product.product_category == 4 ? "Metal" :
+                "Unknown"
+              }
+            </p>
+            <p className="text-xs text-gray-500">Mfg Date: {product.man_date}</p>
+          </div>
+        ))
+      )}
     </div>
+  )}
+
+  {/* Warranty Requests Tab */}
+  {activeTab === "requests" && (
+    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      {requests.length === 0 ? (
+        <p className="col-span-full text-gray-500">No warranty requests found.</p>
+      ) : (
+        requests.map((req) => (
+          <div
+            key={req.warranty_request_id}
+            className="bg-white shadow-md rounded-xl p-5 space-y-2 border border-gray-200"
+          >
+            <h2 className="text-lg font-semibold text-gray-900">{req.customer_name}</h2>
+            <p className="text-sm text-gray-600">Model: {req.model_no}</p>
+            <p className="text-sm">Email: {req.customer_email}</p>
+            <p className="text-sm">Phone: {req.phone_number}</p>
+            <p className="text-sm">Request Date: {req.request_date}</p>
+            <p className="text-sm font-medium text-gray-700">
+              Status:{" "}
+              {req.warranty_status === 1
+                ? "Pending"
+                : req.warranty_status === 2
+                ? "Approved"
+                : "Rejected"}
+            </p>
+            <select
+              value={req.warranty_status}
+              onChange={(e) =>
+                handleStatusChange(e.target.value, req.warranty_request_id)
+              }
+              className="w-full border border-gray-300 px-3 py-2 rounded-lg mt-2"
+            >
+              <option value="1" disabled>
+                Pending
+              </option>
+              <option value="2">Approve</option>
+              <option value="3">Reject</option>
+            </select>
+          </div>
+        ))
+      )}
+    </div>
+  )}
+
+  {/* Add Product Form Modal */}
+  {showForm && (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 px-4">
+      <div className="bg-white text-black p-6 rounded-lg w-full max-w-xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <button
+          onClick={() => setShowForm(false)}
+          className="absolute top-2 right-3 text-gray-500 hover:text-gray-700 text-2xl"
+        >
+          ×
+        </button>
+        <h3 className="text-2xl font-semibold mb-5 text-center text-gray-900">Add New Product</h3>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <label className="block mb-1 text-gray-700">Product Name</label>
+            <input
+              {...register("product_name")}
+              required
+              className="w-full border px-4 py-2 rounded-lg"
+              placeholder="Product Name"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 text-gray-700">Model No</label>
+            <input
+              {...register("model_no")}
+              required
+              className="w-full border px-4 py-2 rounded-lg"
+              placeholder="Model Number"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 text-gray-700">Price</label>
+            <input
+              {...register("product_price")}
+              type="number"
+              required
+              className="w-full border px-4 py-2 rounded-lg"
+              placeholder="Price"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 text-gray-700">Warranty Tenure (Months)</label>
+            <input
+              {...register("warrany_tenure")}
+              type="number"
+              required
+              className="w-full border px-4 py-2 rounded-lg"
+              placeholder="Warranty Tenure"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 text-gray-700">Manufacturing Date</label>
+            <input
+              {...register("man_date")}
+              type="date"
+              required
+              className="w-full border px-4 py-2 rounded-lg"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 text-gray-700">Product Category</label>
+            <select
+              {...register("product_category")}
+              required
+              className="w-full border px-4 py-2 rounded-lg"
+            >
+              <option value="">Select Category</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            className="bg-gray-900 text-white px-6 py-2 rounded-lg w-full hover:bg-gray-700 transition"
+          >
+            Save Product
+          </button>
+        </form>
+      </div>
+    </div>
+  )}
+</div>
+
   );
 };
 

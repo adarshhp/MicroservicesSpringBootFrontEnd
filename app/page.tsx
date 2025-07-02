@@ -89,73 +89,74 @@ export default function Home() {
     }
   };
 return (
-  <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 sm:p-8 font-[family-name:var(--font-geist-sans)]">
-    <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 space-y-6 border border-gray-200">
-      
-      {/* Tabs */}
-      <div className="flex justify-center gap-4 mb-6">
-        <button
-          onClick={() => {
-            setIsLogin(true);
-            reset();
-          }}
-          className={`px-5 py-2 rounded-full font-medium transition ${
-            isLogin
-              ? "bg-indigo-600 text-white shadow"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-          }`}
-        >
-          Login
-        </button>
-        <button
-          onClick={() => {
-            setIsLogin(false);
-            reset();
-          }}
-          className={`px-5 py-2 rounded-full font-medium transition ${
-            !isLogin
-              ? "bg-indigo-600 text-white shadow"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-          }`}
-        >
-          Sign Up
-        </button>
-      </div>
-
-      {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {!isLogin && (
-          <input
-            {...register("userName")}
-            type="text"
-            placeholder="Username"
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 placeholder:text-gray-700"
-          />
-        )}
-        <input
-          {...register("email")}
-          type="email"
-          placeholder="Email"
-          required
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 placeholder:text-gray-700"
-        />
-        <input
-          {...register("password")}
-          type="password"
-          placeholder="Password"
-          required
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 placeholder:text-gray-700"
-        />
-        <button
-          type="submit"
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition"
-        >
-          {isLogin ? "Login" : "Sign Up"}
-        </button>
-      </form>
+  <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4 sm:p-8 font-[family-name:var(--font-geist-sans)]">
+  <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 space-y-6 border border-gray-300">
+    
+    {/* Tabs */}
+    <div className="flex justify-center gap-4 mb-6">
+      <button
+        onClick={() => {
+          setIsLogin(true);
+          reset();
+        }}
+        className={`px-5 py-2 rounded-full font-medium transition ${
+          isLogin
+            ? "bg-gray-800 text-white shadow"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+        }`}
+      >
+        Login
+      </button>
+      <button
+        onClick={() => {
+          setIsLogin(false);
+          reset();
+        }}
+        className={`px-5 py-2 rounded-full font-medium transition ${
+          !isLogin
+            ? "bg-gray-800 text-white shadow"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+        }`}
+      >
+        Sign Up
+      </button>
     </div>
+
+    {/* Form */}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {!isLogin && (
+        <input
+          {...register("userName")}
+          type="text"
+          placeholder="Username"
+          required
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 placeholder:text-gray-700"
+        />
+      )}
+      <input
+        {...register("email")}
+        type="email"
+        placeholder="Email"
+        required
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 placeholder:text-gray-700"
+      />
+      <input
+        {...register("password")}
+        type="password"
+        placeholder="Password"
+        required
+        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 placeholder:text-gray-700"
+      />
+      <button
+        type="submit"
+        className="w-full bg-gray-800 hover:bg-gray-700 text-white py-2 rounded-lg font-semibold transition"
+      >
+        {isLogin ? "Login" : "Sign Up"}
+      </button>
+    </form>
   </div>
+</div>
+
 );
 
 }
