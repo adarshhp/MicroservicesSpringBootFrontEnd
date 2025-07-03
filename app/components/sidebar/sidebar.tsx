@@ -5,50 +5,94 @@ import { useRouter } from "next/navigation";
 
 const Sidebar = () => {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState("company");
+  const [userType, setUserType] = useState<string | null>(null);
 
   useEffect(() => {
-    const ff = localStorage.getItem("user_type");
-    console.log(ff, "user_type");
+    const storedTab = localStorage.getItem("activetab") || "company";
+    const storedUserType = localStorage.getItem("user_type");
+
+    setActiveTab(storedTab);
+    setUserType(storedUserType);
   }, []);
-const ff=localStorage.getItem("activetab")
-  const[activetab,setactivetab]=useState(ff||"company");
+
+  const isActive = (tab: string) =>
+    activeTab !== tab
+      ? `w-full text-left px-4 hover:bg-gray-700 rounded`
+      : `w-full text-left px-4 hover:bg-gray-200 bg-gray-300 rounded text-black`;
+
   return (
     <div className="w-64 min-h-screen bg-gray-900 text-white p-4 flex flex-col">
       <div className="space-y-4">
         <h2 className="text-xl font-bold mb-6">Dashboard</h2>
 
-        <button
-          className={activetab!="company"?`w-full text-left px-4  hover:bg-gray-700 rounded`:`w-full text-left px-4  hover:bg-gray-200 bg-gray-300 rounded text-black`}
-          onClick={() => {router.push("/company");setactivetab("company");localStorage.setItem("activetab","company")}}
-        >
-          Company
-        </button>
+        {/* Company access: user_type === "3" */}
+        {userType === "3" && (
+          <>
+            <button
+              className={isActive("company")}
+              onClick={() => {
+                router.push("/company");
+                setActiveTab("company");
+                localStorage.setItem("activetab", "company");
+              }}
+            >
+              Company
+            </button>
 
-        <button
-          className={activetab!="seller"?`w-full text-left px-4  hover:bg-gray-700 rounded`:"w-full text-left px-4  hover:bg-gray-200 bg-gray-300 rounded text-black"}
-          onClick={() => {router.push("/seller");setactivetab("seller");localStorage.setItem("activetab","seller")}}
-        >
-          Seller
-        </button>
+            <button
+              className={isActive("rcompany")}
+              onClick={() => {
+                router.push("/reports/companyreport");
+                setActiveTab("rcompany");
+                localStorage.setItem("activetab", "rcompany");
+              }}
+            >
+              Company Report
+            </button>
+          </>
+        )}
 
-        <button
-          className={activetab!="customer"?`w-full text-left px-4  hover:bg-gray-700 rounded`:"w-full text-left px-4  hover:bg-gray-200 bg-gray-300 rounded text-black"}
-          onClick={() => {router.push("/customer");setactivetab("customer");localStorage.setItem("activetab","customer")}}
-        >
-          Customer
-        </button>
-        <button
-          className={activetab!="rcompany"?`w-full text-left px-4  hover:bg-gray-700 rounded`:"w-full text-left px-4  hover:bg-gray-200 bg-gray-300 rounded text-black"}
-          onClick={() => {router.push("/reports/companyreport");setactivetab("rcompany");localStorage.setItem("activetab","rcompany")}}
-        >
-          Company report
-        </button>
-        <button
-          className={activetab!="rseller"?`w-full text-left px-4  hover:bg-gray-700 rounded`:"w-full text-left px-4  hover:bg-gray-200 bg-gray-300 rounded text-black"}
-          onClick={() => {router.push("/reports/sellerreports");setactivetab("rseller");localStorage.setItem("activetab","rseller")}}
-        >
-          Seller Report
-        </button>
+        {/* Seller access: user_type === "2" */}
+        {userType === "2" && (
+          <>
+            <button
+              className={isActive("seller")}
+              onClick={() => {
+                router.push("/seller");
+                setActiveTab("seller");
+                localStorage.setItem("activetab", "seller");
+              }}
+            >
+              Seller
+            </button>
+
+            <button
+              className={isActive("rseller")}
+              onClick={() => {
+                router.push("/reports/sellerreports");
+                setActiveTab("rseller");
+                localStorage.setItem("activetab", "rseller");
+              }}
+            >
+              Seller Report
+            </button>
+          </>
+        )}
+
+        {/* Customer access: user_type === "1" */}
+        {userType === "1" && (
+          <button
+            className={isActive("customer")}
+            onClick={() => {
+              router.push("/customer");
+              setActiveTab("customer");
+              localStorage.setItem("activetab", "customer");
+            }}
+          >
+            Customer
+          </button>
+        )}
       </div>
 
       <div className="mt-auto pt-4">
@@ -58,6 +102,7 @@ const ff=localStorage.getItem("activetab")
             localStorage.removeItem("user_type");
             localStorage.removeItem("company_id");
             localStorage.removeItem("user_id");
+            localStorage.removeItem("activetab");
             router.push("/");
           }}
         >

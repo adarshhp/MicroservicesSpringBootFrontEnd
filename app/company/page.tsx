@@ -42,23 +42,37 @@ const Page = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [requests, setRequests] = useState<WarrantyRequest[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [holderStatus, setHolderStatus] = useState("");
+const [productCategory, setProductCategory] = useState("");
+const [modelNo, setModelNo] = useState("");
+
   const { register, handleSubmit, reset } = useForm<Product>();
   const[astatus, setAstatus] = useState("");
   const[amodelNo, setAmodelNo] = useState("");  
   const companyId = Number(localStorage.getItem("company_id"));
 
-  const fetchProducts = async () => {
-    try {
-      const res = await axios.get(`http://localhost:1089/getProducts?company_id=${companyId}` );
-      setProducts(res.data.content || []);
-    } catch (error: any) {
-      alert("Error fetching products: " + error.message);
-    }
-  };
+ const fetchProducts = async () => {
+  try {
+    const res = await axios.get("http://localhost:1089/getProducts", {
+      params: {
+        company_id: companyId,
+        holderStatus,
+        productCategory,
+        ModelNo: modelNo,
+        page:0,
+        size:1000
+      },
+    });
+    setProducts(res.data.content || []);
+  } catch (error: any) {
+    alert("Error fetching products: " + error.message);
+  }
+};
+
 
   const fetchRequests = async () => {
     try {
-      const res = await axios.get(`http://localhost:4089/getraised-warranty-requests?company_id=${companyId}&status=${astatus}&modelNo=${amodelNo}`);
+      const res = await axios.get(`http://localhost:4089/getraised-warranty-requests?company_id=${companyId}&status=${astatus}&modelNo=${amodelNo}&page=0&size=1000`);
       setRequests(res.data.content || []);
     } catch (error: any) {
       alert("Error fetching requests: " + error.message);
@@ -108,10 +122,21 @@ const Page = () => {
 
   return (
   <div className="p-6 bg-white h-full text-black space-y-8">
-  <div className="flex justify-center items-center">
-    <h1 className="text-4xl font-bold text-gray-900">Company Dashboard</h1>
-   
-  </div>
+<div className="relative flex justify-center items-center">
+  <h1 className="text-4xl font-bold text-gray-900">Company Dashboard</h1>
+
+  {activeTab === "products" && (
+    <div className="absolute right-0">
+      <button
+        onClick={() => setShowForm(true)}
+        className="bg-gray-900 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium transition"
+      >
+        + Add Product
+      </button>
+    </div>
+  )}
+</div>
+
 <div className="flex justify-between">
   <div className="space-x-4">
     <button
@@ -143,7 +168,7 @@ const Page = () => {
       type="text"
       onChange={(e) => setAmodelNo(e.target.value)}
       placeholder="Model No"
-      className=" text-gray-100 placeholder-gray-900 border border-gray-700 rounded px-3 py-1.5 w-48 focus:outline-none focus:ring-1 focus:ring-gray-500"
+      className=" text-gray-900 placeholder-gray-900 border border-gray-700 rounded px-3 py-1.5 w-48 focus:outline-none focus:ring-1 focus:ring-gray-500"
     />
 
     <select
@@ -169,15 +194,62 @@ const Page = () => {
 
 
  {activeTab === "products" && (
-      <button
-        onClick={() => setShowForm(true)}
-        className="bg-gray-900 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium transition"
-      >
-        + Add Product
-      </button>
+  <div>
+     <div className="flex flex-wrap items-center gap-3 p-3 rounded-md shadow-sm text-sm">
+            <input
+              type="text"
+              onChange={(e) => setModelNo(e.target.value)}
+              placeholder="Model No"
+              className="text-gray-900 placeholder-gray-900 border border-gray-700 rounded px-3 py-1.5 w-48 focus:outline-none focus:ring-1 focus:ring-gray-500"
+            />
+
+            <select
+              value={holderStatus}
+              onChange={(e) => setHolderStatus(e.target.value)}
+              className="text-gray-900 border placeholder-gray-900 border-gray-700 rounded px-3 py-1.5 w-40 focus:outline-none focus:ring-1 focus:ring-gray-500"
+            >
+              <option value="">All Product Status</option>
+              <option value="1">In Company Stocks</option>
+              <option value="2">With Retail Seller</option>
+              <option value="3">Sold To Customer</option>
+              <option value="4">With Customer</option>
+              <option value="5">Raised Warranty Request</option>
+            </select>
+
+            <select
+              value={productCategory}
+              onChange={(e) => setProductCategory(e.target.value)}
+              className="text-gray-900 border placeholder-gray-900 border-gray-700 rounded px-3 py-1.5 w-40 focus:outline-none focus:ring-1 focus:ring-gray-500"
+            >
+              <option value="">All Categories</option>
+              <option value="1">Electronics</option>
+              <option value="2">Plastic</option>
+              <option value="3">Wood</option>
+              <option value="4">Metal</option>
+            </select>
+
+            <button
+              onClick={() => {
+                fetchProducts();
+              }}
+              className="bg-gray-900 text-gray-100 px-4 py-1.5 rounded hover:bg-gray-800 transition"
+            >
+              Search
+            </button>
+          </div>
+
+
+
+
+    
+      </div>
     )}
 
+
+
+
 </div>
+ 
   {/* Products Tab */}
   {activeTab === "products" && (
     <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -233,13 +305,20 @@ const Page = () => {
                 ? "Approved"
                 : "Rejected"}
             </p>
-            <select
-              value={req.warranty_status}
-              onChange={(e) =>
-                handleStatusChange(e.target.value, req.warranty_request_id)
-              }
-              className="w-full border border-gray-300 px-3 py-2 rounded-lg mt-2"
-            >
+           <select
+  value={req.warranty_status}
+  onChange={(e) =>
+    handleStatusChange(e.target.value, req.warranty_request_id)
+  }
+  className={`w-full border px-3 py-2 rounded-lg mt-2 font-semibold ${
+    req.warranty_status === 1
+      ? "text-yellow-500"
+      : req.warranty_status === 2
+      ? "text-green-600"
+      : "text-red-500"
+  }`}
+>
+
               <option value="1" disabled>
                 Pending
               </option>
@@ -273,6 +352,21 @@ const Page = () => {
               placeholder="Product Name"
             />
           </div>
+          <div>
+            <label className="block mb-1 text-gray-700">Product Category</label>
+            <select
+              {...register("product_category")}
+              required
+              className="w-full border px-4 py-2 rounded-lg"
+            >
+              <option value="">Select Category</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div>
             <label className="block mb-1 text-gray-700">Model No</label>
@@ -289,6 +383,7 @@ const Page = () => {
             <input
               {...register("product_price")}
               type="number"
+              min="0"
               required
               className="w-full border px-4 py-2 rounded-lg"
               placeholder="Price"
@@ -300,6 +395,7 @@ const Page = () => {
             <input
               {...register("warrany_tenure")}
               type="number"
+              min="0"
               required
               className="w-full border px-4 py-2 rounded-lg"
               placeholder="Warranty Tenure"
@@ -316,21 +412,7 @@ const Page = () => {
             />
           </div>
 
-          <div>
-            <label className="block mb-1 text-gray-700">Product Category</label>
-            <select
-              {...register("product_category")}
-              required
-              className="w-full border px-4 py-2 rounded-lg"
-            >
-              <option value="">Select Category</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          
 
           <button
             type="submit"
