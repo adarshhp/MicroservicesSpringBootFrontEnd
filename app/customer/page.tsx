@@ -185,19 +185,22 @@ const [searchModelNo, setSearchModelNo] = useState("");
   // }
 
   try {
-    const response = await axios.get(
-      `http://localhost:3089/warranty-reg-valid?ModelNo=${data.model_no}&PhoneNo=${data.phone_number}`
-    );
+    // const response = await axios.get(
+    //   `http://localhost:3089/warranty-reg-valid?ModelNo=${data.model_no}&PhoneNo=${data.phone_number}`
+    // );
 
-    if (response.data === false) {
-      alert("Entered Phono No not linked to this product. Contact seller for more details.");
-      return;
-    }
+    // if (response.data === false) {
+    //   alert("Entered Phono No not linked to this product. Contact seller for more details.");
+    //   return;
+    // }
 
     const payload = {
       ...data,
       customer_id: customerId,
       // request_date: new Date().toISOString().split("T")[0],
+      purchase_date: "2025-07-03",
+      company_id: modelData?.company_id || 0,
+      phone_number: data.phone_number,
       request_date:  "2025-07-01",
       reason: data.reason || "No reason provided",
       image:"fdsfedsxc"
