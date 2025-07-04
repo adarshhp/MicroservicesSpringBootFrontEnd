@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import Image from "next/image";
 import axios from "axios";
 
 const CustomerWarrantyPage = () => {
@@ -22,6 +23,9 @@ const CustomerWarrantyPage = () => {
   const [editItem, setEditItem] = useState<any | null>(null);
 const [searchModelNo, setSearchModelNo] = useState("");
   const customerId = Number(localStorage.getItem("user_id"));
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  
 
   const registerForm = useForm();
   const requestForm = useForm();
@@ -178,6 +182,15 @@ const [searchModelNo, setSearchModelNo] = useState("");
     }
   };
 
+ const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
  const handleRequestSubmit = async (data: any) => {
   // if (!modelValid) {
   //   alert("Please validate model number first");
@@ -193,7 +206,8 @@ const [searchModelNo, setSearchModelNo] = useState("");
     //   alert("Entered Phono No not linked to this product. Contact seller for more details.");
     //   return;
     // }
-
+ const file = data.image[0]; // data.image is a FileList
+    const base64Image = await convertToBase64(file);
     const payload = {
       ...data,
       customer_id: customerId,
@@ -203,7 +217,7 @@ const [searchModelNo, setSearchModelNo] = useState("");
       phone_number: data.phone_number,
       request_date:  "2025-07-01",
       reason: data.reason || "No reason provided",
-      image:"fdsfedsxc"
+      image:base64Image
     };
 
     const eligibilityResponse = await axios.get(
@@ -240,6 +254,8 @@ const [searchModelNo, setSearchModelNo] = useState("");
     setShowRequestForm(true);
     requestForm.setValue("model_no", modelNo);
   };
+
+  console.log(productDetailsMap,"productDetailsMap")
 
   return (
  <div className="p-6 max-w-screen bg-white h-full text-gray-800">
@@ -330,7 +346,15 @@ const [searchModelNo, setSearchModelNo] = useState("");
             key={item.purchase_Id}
             className="bg-white border border-gray-200 rounded-xl p-5 shadow-lg relative"
           >
+                <div className="flex items-center justify-between mb-3">
             <p className="text-lg font-medium">Model: {item.model_no}</p>
+<button
+  onClick={() => setPreviewImage(product.product_image)}
+  className="text-blue-600 underline text-sm hover:text-blue-800 transition"
+>
+  View Image
+</button>
+</div>
             <p>Purchase Date: {item.purchase_date}</p>
             {product.product_name && (
               <>
@@ -369,6 +393,27 @@ const [searchModelNo, setSearchModelNo] = useState("");
     </div>
   )}
 
+    {previewImage && (
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+      <div className="bg-white p-4 rounded-lg shadow-lg relative">
+        <button
+          onClick={() => setPreviewImage(null)}
+          className="absolute top-1 right-2 text-xl text-gray-500 hover:text-gray-700"
+        >
+          ×
+        </button>
+        <div className="relative w-[80vw] h-[80vh] max-w-[600px] max-h-[600px]">
+          <Image
+            src={previewImage}
+            alt="Product Preview"
+            fill
+            className="object-contain rounded"
+          />
+        </div>
+      </div>
+    </div>
+  )}
+
   {/* Warranty Requests */}
   {activeTab === "requests" && (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -379,9 +424,17 @@ const [searchModelNo, setSearchModelNo] = useState("");
             key={req.warranty_request_id}
             className="bg-white border border-gray-200 rounded-xl p-5 shadow-lg"
           >
+            <div className="flex items-center justify-between mb-3">
             <p className="text-lg font-medium">Model: {req.model_no}</p>
+            <button
+  onClick={() => setPreviewImage(product.product_image)}
+  className="text-blue-600 underline text-sm hover:text-blue-800 transition"
+>
+  View Image
+</button></div>
             <p>Name: {req.customer_name}</p>
             <p>Email: {req.customer_email}</p>
+            
             <p>
               Status:{" "}
               <span className="text-gray-700">
@@ -399,6 +452,7 @@ const [searchModelNo, setSearchModelNo] = useState("");
                 <p>Price: ₹{product.product_price}</p>
                 <p>Warranty: {product.warrany_tenure} years</p>
                 <p>Manufactured: {product.man_date}</p>
+
               </>
             )}
           </div>
@@ -506,6 +560,19 @@ const [searchModelNo, setSearchModelNo] = useState("");
             required
             className="p-2 border border-gray-300 rounded w-full"
           />
+
+
+ <div>
+                <label className="block mb-1 text-gray-700">Upload Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  {...requestForm.register("image", { required: true })}
+                  className="w-full border px-4 py-2 rounded-lg"
+                />
+              </div>
+
+
           <input
             {...requestForm.register("reason")}
             placeholder="Reason for Request"

@@ -4,6 +4,7 @@ import React from "react";
 import { usePathname } from "next/navigation";
 import Navbar from "../navbar/Navbar";
 import Sidebar from "./sidebar/sidebar";
+import SidebarD from "./sidebar/sidebardupe";
 
 type Props = {
   children: React.ReactNode;
@@ -19,8 +20,9 @@ const ClientLayout = ({ children }: Props) => {
     <>
       <div className="flex">
         <Sidebar />
+        <SidebarD/>
         <div className="w-full">
-        <main className="flex-1 bg-gray-100 min-h-screen">
+          <main className="flex-1 bg-gray-100 min-h-screen">
                     <Navbar/>
 
           {children}
