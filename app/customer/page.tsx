@@ -337,25 +337,28 @@ const [searchModelNo, setSearchModelNo] = useState("");
   </div>
 
   {/* Registered Products */}
-  {activeTab === "registered" && (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {registered.map((item) => {
+{activeTab === "registered" && (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {registered.length > 0 ? (
+      registered.map((item) => {
         const product = productDetailsMap[item.model_no] || {};
         return (
           <div
             key={item.purchase_Id}
             className="bg-white border border-gray-200 rounded-xl p-5 shadow-lg relative"
           >
-                <div className="flex items-center justify-between mb-3">
-            <p className="text-lg font-medium">Model: {item.model_no}</p>
-<button
-  onClick={() => setPreviewImage(product.product_image)}
-  className="text-blue-600 underline text-sm hover:text-blue-800 transition"
->
-  View Image
-</button>
-</div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-lg font-medium">Model: {item.model_no}</p>
+              <button
+                onClick={() => setPreviewImage(product.product_image)}
+                className="text-blue-600 underline text-sm hover:text-blue-800 transition"
+              >
+                View Image
+              </button>
+            </div>
+
             <p>Purchase Date: {item.purchase_date}</p>
+
             {product.product_name && (
               <>
                 <hr className="my-3" />
@@ -365,6 +368,7 @@ const [searchModelNo, setSearchModelNo] = useState("");
                 <p>Manufactured: {product.man_date}</p>
               </>
             )}
+
             <div className="absolute top-2 right-2 space-x-3 text-sm font-medium">
               <button
                 onClick={() => handleEdit(item)}
@@ -389,9 +393,15 @@ const [searchModelNo, setSearchModelNo] = useState("");
             </div>
           </div>
         );
-      })}
-    </div>
-  )}
+      })
+    ) : (
+      <p className="text-center text-gray-500 col-span-full">
+        No registered warranties found.
+      </p>
+    )}
+  </div>
+)}
+
 
     {previewImage && (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
@@ -415,9 +425,10 @@ const [searchModelNo, setSearchModelNo] = useState("");
   )}
 
   {/* Warranty Requests */}
-  {activeTab === "requests" && (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {requests.map((req) => {
+ {activeTab === "requests" && (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {requests.length > 0 ? (
+      requests.map((req) => {
         const product = productDetailsMap[req.model_no] || {};
         return (
           <div
@@ -425,16 +436,18 @@ const [searchModelNo, setSearchModelNo] = useState("");
             className="bg-white border border-gray-200 rounded-xl p-5 shadow-lg"
           >
             <div className="flex items-center justify-between mb-3">
-            <p className="text-lg font-medium">Model: {req.model_no}</p>
-            <button
-  onClick={() => setPreviewImage(product.product_image)}
-  className="text-blue-600 underline text-sm hover:text-blue-800 transition"
->
-  View Image
-</button></div>
+              <p className="text-lg font-medium">Model: {req.model_no}</p>
+              <button
+                onClick={() => setPreviewImage(product.product_image)}
+                className="text-blue-600 underline text-sm hover:text-blue-800 transition"
+              >
+                View Image
+              </button>
+            </div>
+
             <p>Name: {req.customer_name}</p>
             <p>Email: {req.customer_email}</p>
-            
+
             <p>
               Status:{" "}
               <span className="text-gray-700">
@@ -445,6 +458,7 @@ const [searchModelNo, setSearchModelNo] = useState("");
                   : "Rejected"}
               </span>
             </p>
+
             {product.product_name && (
               <>
                 <hr className="my-3" />
@@ -452,14 +466,19 @@ const [searchModelNo, setSearchModelNo] = useState("");
                 <p>Price: ₹{product.product_price}</p>
                 <p>Warranty: {product.warrany_tenure} years</p>
                 <p>Manufactured: {product.man_date}</p>
-
               </>
             )}
           </div>
         );
-      })}
-    </div>
-  )}
+      })
+    ) : (
+      <p className="text-center text-gray-500 col-span-full">
+        No warranty requests found.
+      </p>
+    )}
+  </div>
+)}
+
 
   {/* Register Form Modal */}
   {showRegisterForm && (
@@ -483,12 +502,14 @@ const [searchModelNo, setSearchModelNo] = useState("");
           onSubmit={registerForm.handleSubmit(handleRegisterSubmit)}
           className="space-y-4"
         >
+          <label>Model No</label>
           <input
             {...registerForm.register("model_no")}
             placeholder="Model No"
             required
             className="p-2 border border-gray-300 rounded w-full"
           />
+          <label>Purchase Date</label>
           <input
             {...registerForm.register("purchase_date")}
             type="date"

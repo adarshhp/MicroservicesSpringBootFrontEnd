@@ -4,6 +4,8 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
+import Image from "next/image";
+
 
 const Page = () => {
   const [activeTab, setActiveTab] = useState<"inventory" | "purchases">(
@@ -25,6 +27,8 @@ const Page = () => {
   const [modelNoss, setModelNos] = useState<string>("");
   const [warrantys, setWarrantys] = useState<number | "">("");
   const [modelnopurchase, setModelNoPurchase] = useState<string>("");
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  
 
   const inventoryForm = useForm();
   const purchaseForm = useForm();
@@ -266,6 +270,7 @@ const Page = () => {
     purchaseForm.setValue("modelNo", item.model_no);
     fetchModelDetails(item.model_no, "purchase");
   };
+
   return (
     <div className="p-6 min-w-sc mx-auto space-y-6 bg-white h-full text-gray-900">
   <h1 className="text-4xl font-bold text-center text-gray-900">Seller Dashboard</h1>
@@ -387,10 +392,32 @@ const Page = () => {
     </div>
   </div>
 
+   {previewImage && (
+      <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+        <div className="bg-white p-4 rounded-lg shadow-lg relative">
+          <button
+            onClick={() => setPreviewImage(null)}
+            className="absolute top-1 right-2 text-xl text-gray-500 hover:text-gray-700"
+          >
+            ×
+          </button>
+          <div className="relative w-[80vw] h-[80vh] max-w-[600px] max-h-[600px]">
+            <Image
+              src={previewImage}
+              alt="Product Preview"
+              fill
+              className="object-contain rounded"
+            />
+          </div>
+        </div>
+      </div>
+    )}
+
   {/* Inventory List */}
-  {activeTab === "inventory" && (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {inventory.map((item) => {
+{activeTab === "inventory" && (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {inventory.length > 0 ? (
+      inventory.map((item) => {
         const prod = productDetailsMap[item.model_no] || {};
         return (
           <div
@@ -398,7 +425,9 @@ const Page = () => {
             className="bg-white border border-gray-200 rounded-xl p-5 shadow-md"
           >
             <span className="flex justify-between">
-              <p className="font-semibold text-lg mb-1">Model: {item.model_no}</p>
+              <p className="font-semibold text-lg mb-1">
+                Model: {item.model_no}
+              </p>
               <p
                 className="text-gray-700 underline cursor-pointer"
                 onClick={() => showEditOption(item)}
@@ -406,7 +435,15 @@ const Page = () => {
                 Mark sold!
               </p>
             </span>
+            <div className="flex items-center justify-between mb-2">
             <p>Price: ₹{item.price}</p>
+             <button
+                onClick={() => setPreviewImage(productDetailsMap[item.model_no]?.product_image || null)}
+                className="text-blue-600 underline text-sm hover:text-blue-800 transition"
+              >
+                View Image
+              </button>
+              </div>
             <p>Warranty: {item.warranty} months</p>
             <div className="flex justify-between items-center mt-2 text-sm">
               <p>Date: {item.purchase_date}</p>
@@ -420,6 +457,8 @@ const Page = () => {
                   ? "Item Purchased"
                   : prod.holderStatus === 1
                   ? "Product Shipped"
+                  : prod.holderStatus === 5
+                  ? "Warranty Requested"
                   : "No Data"}
               </p>
             </div>
@@ -452,24 +491,34 @@ const Page = () => {
             </div>
           </div>
         );
-      })}
-    </div>
-  )}
+      })
+    ) : (
+      <div className="text-gray-500 col-span-full text-center">
+        No items available
+      </div>
+    )}
+  </div>
+)}
+
 
   {/* Purchases List */}
-  {activeTab === "purchases" && (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {purchases.map((purchase) => {
+ {activeTab === "purchases" && (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {purchases.length > 0 ? (
+      purchases.map((purchase) => {
         const prod = productDetailsMap[purchase.modelNo] || {};
         return (
           <div
             key={purchase.sale_id}
             className="bg-white border border-gray-200 rounded-xl p-5 shadow-md"
           >
-            <p className="font-semibold text-lg mb-1">Customer: {purchase.name}</p>
+            <p className="font-semibold text-lg mb-1">
+              Customer: {purchase.name}
+            </p>
             <p>Model: {purchase.modelNo}</p>
             <p>Price: ₹{purchase.price}</p>
             <p>Date: {purchase.purchase_date}</p>
+
             {prod.product_name && (
               <>
                 <hr className="my-3" />
@@ -486,6 +535,7 @@ const Page = () => {
                 </p>
               </>
             )}
+
             <div className="space-x-4 mt-4 text-sm font-medium">
               <button
                 onClick={() => {
@@ -507,9 +557,15 @@ const Page = () => {
             </div>
           </div>
         );
-      })}
-    </div>
-  )}
+      })
+    ) : (
+      <div className="text-gray-500 col-span-full text-center">
+        No purchases found.
+      </div>
+    )}
+  </div>
+)}
+
 
   {/* Inventory Form */}
   {showInventoryForm && (
