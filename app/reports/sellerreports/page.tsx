@@ -254,10 +254,10 @@ const Page = () => {
                 <th className="p-2 border">Price</th>
                 <th className="p-2 border">Warranty (months)</th>
                 <th className="p-2 border">Purchase Date</th>
-                <th className="p-2 border">Item Status</th>
                 <th className="p-2 border">Product Name</th>
                 <th className="p-2 border">Tenure (years)</th>
                 <th className="p-2 border">Mfg Date</th>
+                <th className="p-2 border">Item Status</th>
               </tr>
             </thead>
             <tbody>
@@ -270,20 +270,22 @@ const Page = () => {
                     <td className="p-2 border">₹{item.price}</td>
                     <td className="p-2 border">{item.warranty}</td>
                     <td className="p-2 border">{item.purchase_date}</td>
+                    <td className="p-2 border">{prod.product_name || "-"}</td>
+                    <td className="p-2 border">{prod.warrany_tenure || "-"}</td>
+                    <td className="p-2 border">{prod.man_date || "-"}</td>
                     <td className="p-2 border">
                       {prod.holderStatus === 2
                         ? "Item Available"
                         : prod.holderStatus === 3
-                        ? "Out of Stock"
+                        ? "Item Sold"
                         : prod.holderStatus === 4
-                        ? "Item Purchased"
+                        ? "With Customer"
                         : prod.holderStatus === 1
                         ? "Product Shipped"
+                        : prod.holderStatus === 5
+                        ? "Warranty Requested"
                         : "No Data"}
                     </td>
-                    <td className="p-2 border">{prod.product_name || "-"}</td>
-                    <td className="p-2 border">{prod.warrany_tenure || "-"}</td>
-                    <td className="p-2 border">{prod.man_date || "-"}</td>
                   </tr>
                 );
               })}
@@ -343,7 +345,7 @@ const Page = () => {
                     <td className="p-2 border">{prod.man_date || "-"}</td>
                     <td className="p-2 border text-gray-700 font-medium">
                       {prod.holderStatus === 4
-                        ? "Apply for warranty"
+                        ? "With Customer"
                         : "Requested for warranty"}
                     </td>
                   </tr>
