@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-const Sidebar = () => {
+const SidebarD = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("company");
   const [userType, setUserType] = useState<string | null>(null);
@@ -22,7 +22,7 @@ const Sidebar = () => {
       : `w-full text-left px-4 hover:bg-gray-200 bg-gray-300 rounded text-black`;
 
   return (
-<div className="fixed top-0 left-0 h-screen w-64 bg-gray-900 text-white p-4 flex flex-col z-50">
+<div className="w-64 max-h-screen bg-green-300 text-white p-30 flex flex-col">
       <div className="space-y-4">
         <h2 className="text-xl font-bold mb-6">Dashboard</h2>
 
@@ -113,4 +113,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default SidebarD;
