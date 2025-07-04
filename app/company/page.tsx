@@ -14,6 +14,7 @@ const categories = [
 ];
 
 type Product = {
+  holderStatus: number;
   product_price: number;
   product_name: string;
   model_no: string;
@@ -26,6 +27,7 @@ type Product = {
 };
 
 type WarrantyRequest = {
+  reason: string;
   warranty_request_id: number;
   customer_id: number;
   request_date: string;
@@ -138,6 +140,16 @@ const Page = () => {
       });
   };
 
+  const handleReset=()=>{
+    setModelNo("");
+    setHolderStatus("");
+    setProductCategory("");
+    setAstatus("");
+    setAmodelNo("");
+    // fetchProducts();
+    // fetchRequests();
+  }
+
   return (
     <div className="p-6 bg-white h-full text-black space-y-8">
       <div className="relative flex justify-center items-center">
@@ -214,6 +226,7 @@ const Page = () => {
               <input
                 type="text"
                 onChange={(e) => setModelNo(e.target.value)}
+                value={modelNo}
                 placeholder="Model No"
                 className="text-gray-900 placeholder-gray-900 border border-gray-700 rounded px-3 py-1.5 w-48 focus:outline-none focus:ring-1 focus:ring-gray-500"
               />
@@ -250,6 +263,9 @@ const Page = () => {
                 className="bg-gray-900 text-gray-100 px-4 py-1.5 rounded hover:bg-gray-800 transition"
               >
                 Search
+              </button>
+              <button onClick={()=>handleReset()} className="bg-red-600 text-white px-4 py-1.5 rounded hover:bg-red-700 transition">
+                Reset
               </button>
             </div>
           </div>
@@ -300,10 +316,10 @@ const Page = () => {
   View Image
 </button></div>
                 <p className="text-sm text-gray-600">
-                  Model: {product.model_no}
+                  Product Model: {product.model_no}
                 </p>
                 <p className="text-sm text-gray-800 font-medium">
-                  ₹{product.product_price}
+                  Product Price₹{product.product_price}
                 </p>
                 <p className="text-sm">
                   Warranty: {product.warrany_tenure} months
@@ -320,7 +336,20 @@ const Page = () => {
                     ? "Metal"
                     : "Unknown"}
                 </p>
-               
+                  <p>
+ {product.holderStatus === 2
+                        ? "Item with Retail Seller"
+                        : product.holderStatus === 3
+                        ? "Item Sold to Customer"
+                        : product.holderStatus === 4
+                        ? "With Customer"
+                        : product.holderStatus === 1
+                        ? "Item In Company Stocks"
+                        : product.holderStatus === 5
+                        ? "Warranty Requested"
+                        : "No Data"}
+
+                    </p>    
 
                 <p className="text-xs text-gray-500">
                   Mfg Date: {product.man_date}
@@ -368,6 +397,9 @@ const Page = () => {
                     ? "Approved"
                     : "Rejected"}
                 </p>
+                <p className="text-xs text-gray-500">
+                  Reason:{req.reason}
+                  </p>
                 <select
                   value={req.warranty_status}
                   onChange={(e) =>

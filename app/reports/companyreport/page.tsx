@@ -6,6 +6,7 @@ import axios from "axios";
 import * as XLSX from "xlsx";
 
 type Product = {
+  holderStatus: number;
   product_price: number;
   product_name: string;
   model_no: string;
@@ -25,6 +26,7 @@ type WarrantyRequest = {
   phone_number: number;
   model_no: string;
   purchase_date: string;
+  holderStatus: number;
   warranty_status: number;
   image: string;
   company_id: number;
@@ -62,6 +64,8 @@ const Page = () => {
           ModelNo: modelNo,
         },
       });
+
+      console.log(res.data.content,"aaaaaaaaaaaaaa");
       setProducts(res.data.content || []);
       setTotalPages(res.data.totalPages || 1);
     } catch (error: any) {
@@ -267,6 +271,7 @@ const Page = () => {
                 <th className="px-4 py-2 border">Warranty</th>
                 <th className="px-4 py-2 border">Category</th>
                 <th className="px-4 py-2 border">Manufacture Date</th>
+                <th className="px-4 py-2 border">Product Status</th>
               </tr>
             </thead>
             <tbody>
@@ -288,7 +293,19 @@ const Page = () => {
                       {["", "Electronics", "Plastic", "Wood", "Metal"][product.product_category] || "Unknown"}
                     </td>
                     <td className="px-4 py-2 border">{product.man_date}</td>
-                  </tr>
+<td className="p-2 border">
+                      {product.holderStatus === 2
+                        ? "With Retail Seller"
+                        : product.holderStatus === 3
+                        ? "Sold To Customer"
+                        : product.holderStatus === 4
+                        ? "With Customer"
+                        : product.holderStatus === 5
+                        ? "Raised Warranty Request"
+                        : product.holderStatus === 1
+                        ? "In Company Stocks"
+                        : "No Data"}
+                    </td>                  </tr>
                 ))
               )}
             </tbody>
