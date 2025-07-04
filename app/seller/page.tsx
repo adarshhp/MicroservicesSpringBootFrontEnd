@@ -427,7 +427,7 @@ const Page = () => {
               <>
                 <hr className="my-3" />
                 <p>Product Name: {prod.product_name}</p>
-                <p>Warranty Tenure (years): {prod.warrany_tenure}</p>
+                <p>Warranty Tenure (month): {prod.warrany_tenure}</p>
                 <p>Manufactured: {prod.man_date}</p>
               </>
             )}
