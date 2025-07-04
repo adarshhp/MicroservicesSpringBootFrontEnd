@@ -30,7 +30,7 @@ const Page = () => {
   const purchaseForm = useForm();
   const fetchInventory = async () => {
     const res = await axios.get(
-      `http://localhost:3089/allinventory?Seller_Id=${sellerId}&categoryId=${categoryIds}&modelNo=${modelNoss}&warranty=${
+      `http://localhost:3089/allinventory?Seller_Id=${sellerId}&page=0&size=1000&categoryId=${categoryIds}&modelNo=${modelNoss}&warranty=${
         warrantys == 0 ? "" : warrantys
       }`
     );
@@ -41,7 +41,7 @@ const Page = () => {
 
   const fetchPurchases = async () => {
     const res = await axios.get(
-      `http://localhost:3089/GetPurchases?Seller_Id=${sellerId}&modelNo=${modelnopurchase}`
+      `http://localhost:3089/GetPurchases?Seller_Id=${sellerId}&modelNo=${modelnopurchase}&page=0&size=1000`
     );
     const data = res.data.content || [];
     setPurchases(data);
@@ -618,7 +618,7 @@ const Page = () => {
               className="p-2 border rounded w-full"
               disabled
             />
-            <button
+            {/* <button
               type="button"
               onClick={() =>
                 fetchModelDetails(
@@ -629,7 +629,7 @@ const Page = () => {
               className="bg-gray-900 text-white px-4 py-1 rounded"
             >
               Fetch
-            </button>
+            </button> */}
           </div>
           <div>
             <label className="block mb-1">Selling Date</label>
