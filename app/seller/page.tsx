@@ -466,7 +466,7 @@ const Page = () => {
               <>
                 <hr className="my-3" />
                 <p>Product Name: {prod.product_name}</p>
-                <p>Warranty Tenure (years): {prod.warrany_tenure}</p>
+                <p>Warranty Tenure (month): {prod.warrany_tenure}</p>
                 <p>Manufactured: {prod.man_date}</p>
               </>
             )}
@@ -591,6 +591,9 @@ const Page = () => {
               required
               className="p-2 border rounded w-full"
             />
+
+            {
+              !editingItem&&(
             <button
               type="button"
               onClick={() =>
@@ -603,6 +606,11 @@ const Page = () => {
             >
               Fetch
             </button>
+              )
+            }
+           
+
+
           </div>
           <div>
             <label className="block mb-1">Price</label>
@@ -623,7 +631,7 @@ const Page = () => {
             />
           </div>
           <div>
-            <label className="block mb-1">Selling Date</label>
+            <label className="block mb-1">Purchase Date</label>
             <input
               {...inventoryForm.register("purchase_date")}
               type="date"
@@ -687,15 +695,7 @@ const Page = () => {
               Fetch
             </button> */}
           </div>
-          <div>
-            <label className="block mb-1">Selling Date</label>
-            <input
-              {...purchaseForm.register("purchase_date")}
-              type="date"
-              required
-              className="p-2 border rounded w-full"
-            />
-          </div>
+          
           <div>
             <label className="block mb-1">Price</label>
             <input
@@ -714,6 +714,15 @@ const Page = () => {
               required
               className="p-2 border rounded w-full"
               disabled
+            />
+          </div>
+          <div>
+            <label className="block mb-1">Selling Date</label>
+            <input
+              {...purchaseForm.register("purchase_date")}
+              type="date"
+              required
+              className="p-2 border rounded w-full"
             />
           </div>
           <div>
