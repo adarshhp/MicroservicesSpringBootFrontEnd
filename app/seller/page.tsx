@@ -535,6 +535,9 @@ const Page = () => {
               required
               className="p-2 border rounded w-full"
             />
+
+            {
+              !editingItem&&(
             <button
               type="button"
               onClick={() =>
@@ -547,6 +550,11 @@ const Page = () => {
             >
               Fetch
             </button>
+              )
+            }
+           
+
+
           </div>
           <div>
             <label className="block mb-1">Price</label>
@@ -567,7 +575,7 @@ const Page = () => {
             />
           </div>
           <div>
-            <label className="block mb-1">Selling Date</label>
+            <label className="block mb-1">Purchase Date</label>
             <input
               {...inventoryForm.register("purchase_date")}
               type="date"
@@ -631,15 +639,7 @@ const Page = () => {
               Fetch
             </button> */}
           </div>
-          <div>
-            <label className="block mb-1">Selling Date</label>
-            <input
-              {...purchaseForm.register("purchase_date")}
-              type="date"
-              required
-              className="p-2 border rounded w-full"
-            />
-          </div>
+          
           <div>
             <label className="block mb-1">Price</label>
             <input
@@ -658,6 +658,15 @@ const Page = () => {
               required
               className="p-2 border rounded w-full"
               disabled
+            />
+          </div>
+          <div>
+            <label className="block mb-1">Selling Date</label>
+            <input
+              {...purchaseForm.register("purchase_date")}
+              type="date"
+              required
+              className="p-2 border rounded w-full"
             />
           </div>
           <div>

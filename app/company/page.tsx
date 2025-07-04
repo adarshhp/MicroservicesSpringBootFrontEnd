@@ -384,8 +384,8 @@ const Page = () => {
                   <option value="1" disabled>
                     Pending
                   </option>
-                  <option value="2">Approve</option>
-                  <option value="3">Reject</option>
+                  <option value="2">Approved</option>
+                  <option value="3">Rejected</option>
                 </select>
               </div>
             ))
